@@ -1,0 +1,6 @@
+{"candidates":[{"name":"Rosalind Achebe","current_title":"Head of Platform Partnerships, AI","current_company":"Kestrel Labs","url":"https://www.example-talent.dev/p/rosalind-achebe?utm_source=search&ref=list#profile","source_note":"search results p2"},{"name":"Dov Hershberg","title":"Partnerships Lead, Model Providers","company":"Ardent Foundry","location":"Remote (US)","profile_url":"https://example-talent.dev/p/dov-hershberg","source_note":"search results p2"}]}
+{"name":"Tomas Lindqvist","email":"TOMAS@example-talent.dev","title":"Director, Ecosystem & Alliances (Marketplace)","company":"Vantage Grid","profile_url":"https://example-talent.dev/p/tomas-lindqvist/","source_note":"referral list"}
+{"name":"Ingrid Solberg","title":"Head of Partnerships","company":"Quill & Anchor Retail","location":"Chicago, IL","profile_url":"https://example-talent.dev/p/ingrid-solberg","source_note":"search results p2"}
+{"name":"Kwame Boateng","title":"Alliances Director","company":"Sable Interactive","location":"Remote (US)","profile_url":"https://example-talent.dev/p/kwame-boateng","source_note":"search results p2"}
+{ this line is deliberately malformed json to exercise the parser
+{"name":"","profile_url":"","company":"Unnamed Co"}

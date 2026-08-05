@@ -64,6 +64,14 @@ recruiting-candidates/
     └── compile_report.mjs          candidates/*.md → index.html + results.csv + summary.json
 ```
 
+## Try it
+
+A ready-to-run **Head of AI Partnerships** req, live ATS source URLs, and an offline fixture live in [`samples/`](samples/README.md). Fastest path — both scripts end to end, no browser, no keys:
+
+```bash
+cp -R samples/fixture /tmp/rc-demo && node scripts/normalize_candidates.mjs /tmp/rc-demo && node scripts/compile_report.mjs /tmp/rc-demo --open
+```
+
 ## Try the scripts without a browser
 
 Both scripts are dependency-free Node 18+ and run standalone:

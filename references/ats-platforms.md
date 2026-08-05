@@ -29,8 +29,10 @@ Run in this order and stop at the first hit. URL first (free), then DOM markers 
 - **Trap**: some boards gate `/apply` behind a redirect to a company-hosted form. Re-run recon on the landing URL rather than assuming Lever selectors hold.
 
 ### Ashby
-- **Detect**: `jobs.ashbyhq.com`, `__NEXT_DATA__` present.
-- **Strategy**: `next-data` — parse the embedded JSON, do not scrape cards. Postings live under the page props; the shape is stable within a board.
+- **Detect**: `jobs.ashbyhq.com`, `window.__appData` present in the HTML.
+- **Strategy**: `app-data` — parse the embedded JSON, do not scrape cards. Verified against `jobs.ashbyhq.com/openai` (2026-08): the served HTML carries `window.__appData` with a `jobPostings` array of ~690 records, each `{ id, title, teamId, locationId, locationName, workplaceType, employmentType, secondaryLocations }`, plus a sibling `teams` array to resolve `teamId`. One fetch gets the whole board — no pagination, no scrolling.
+- Posting URLs are `https://jobs.ashbyhq.com/{board}/{id}` using the record's UUID.
+- **Not `__NEXT_DATA__`.** Older Ashby boards used it; current ones do not. Detect on `window.__appData` and fall back to `stagehand` if neither is present.
 - **Application form**: React-controlled inputs. `browser_fill_form` handles the change events; raw value assignment does not.
 - **Trap**: file upload is a custom component. Observe first, then upload against the resolved `input[type=file]`.
 

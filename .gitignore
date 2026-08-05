@@ -2,17 +2,24 @@ node_modules/
 .DS_Store
 *.log
 
-# Run output — never commit candidate data
-recruiting/
+# Run output at the repo root — never commit candidate data
+/recruiting/
+/raw/
+/candidates/
+/proof/
+/results.csv
+/summary.json
+/index.html
 *_prospects_*/
 *_research_*/
-raw/
-candidates/
-proof/
-results.csv
-summary.json
-index.html
 
-# Real role profiles hold applicant PII; only the template is tracked
-profiles/*.json
-!profiles/example.json
+# Generated when the offline fixture is run in place
+/samples/fixture/candidates.jsonl
+/samples/fixture/seed_candidates.txt
+/samples/fixture/results.csv
+/samples/fixture/summary.json
+/samples/fixture/index.html
+
+# Real role profiles hold applicant PII; only the shipped template is tracked
+/profiles/*.json
+!/profiles/example.json

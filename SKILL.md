@@ -141,7 +141,7 @@ Classify from the returned content and write `{OUTPUT_DIR}/recon.json` with `pla
 |---|---|---|
 | `boards.greenhouse.io`, `grnh.se`, `#grnhse_app` | `greenhouse` | `dom` |
 | `jobs.lever.co`, `.posting-` classes | `lever` | `dom` |
-| `jobs.ashbyhq.com`, `__NEXT_DATA__` present | `ashby` | `next-data` |
+| `jobs.ashbyhq.com`, `window.__appData` present | `ashby` | `app-data` |
 | `myworkdayjobs.com`, `data-automation-id` | `workday` | `stagehand` |
 | `apply.workable.com`, `smartrecruiters.com` | `workable`/`smartrecruiters` | `dom` |
 | Login wall / MFA challenge | any | `assisted` |

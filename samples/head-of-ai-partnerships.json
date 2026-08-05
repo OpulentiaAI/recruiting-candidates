@@ -1,0 +1,45 @@
+{
+  "req_slug": "head-of-ai-partnerships",
+  "role_title": "Head of AI Partnerships",
+  "seniority_band": "Head — owns the partnerships function and carries its number. Sets partner strategy, hires and directs a small team, and is accountable to the exec staff for sourced pipeline. Not an IC who manages an inherited account list.",
+  "team": "Go-to-Market / Ecosystem",
+  "must_haves": [
+    "Owned a partner portfolio with a number attached to it — sourced or influenced pipeline, co-sell revenue, or marketplace GMV. The number has to appear in their own account of the work, not be inferable from the job title.",
+    "Closed and then operated partnerships with AI or cloud platform vendors — model providers, hyperscaler marketplaces, or ISVs building on top of a platform. Signing is not the job; the year after signing is the job.",
+    "Built or rebuilt a partner motion rather than inheriting one — first partner program, first marketplace listing, first co-sell agreement, or a documented turnaround of a stalled one.",
+    "Technical fluency sufficient to scope an integration with an engineering team: can describe what was actually built with a partner, in what order, and what broke."
+  ],
+  "nice_to_haves": [
+    "Ran an AWS / Azure / GCP marketplace listing end to end, including private offers",
+    "Public ecosystem presence — conference talks, partner-facing docs, developer relations crossover",
+    "Took a partner org from seed/Series A into scale, or the reverse move from big-platform BD into a startup",
+    "Prior founder, or a BD-engineering hybrid background"
+  ],
+  "disqualifiers": [
+    "Channel resale only — reseller/distributor management with no technical integration work",
+    "Requires visa sponsorship and this req cannot sponsor",
+    "IC-only track with no portfolio, budget, or team ownership at any point"
+  ],
+  "locations": ["San Francisco Bay Area", "New York, NY", "Remote (US)"],
+  "max_sourced": 150,
+  "browser_concurrency": 3,
+  "ats": {
+    "name": "greenhouse",
+    "url": "https://app.greenhouse.io/people",
+    "default_stage": "Sourced",
+    "note_template": "Sourced via recruiting-candidates — fit {fit_score}/10. {fit_reasoning}"
+  },
+  "applicant": {
+    "mode": "self",
+    "full_name": "",
+    "email": "",
+    "phone": "",
+    "location": "",
+    "linkedin": "",
+    "resume_path": "/opulent/workspace/uploads/resume.pdf",
+    "work_authorization": "",
+    "salary_expectation": "",
+    "why_this_company": ""
+  },
+  "created_at": "2026-08-05"
+}

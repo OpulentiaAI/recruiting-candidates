@@ -1,0 +1,42 @@
+{
+  "req_slug": "example-staff-platform",
+  "role_title": "Staff Platform Engineer",
+  "seniority_band": "Staff — owns a platform surface and the team's technical direction for it",
+  "team": "Platform Infrastructure",
+  "must_haves": [
+    "Owned a distributed data or ingestion platform in production",
+    "Multi-tenant isolation work (quotas, noisy-neighbor, per-tenant SLOs)",
+    "Staff-level scope: set technical direction for a team, not just delivered against it"
+  ],
+  "nice_to_haves": [
+    "Public writing or talks on the above",
+    "Open-source maintainership in the infra space",
+    "Experience migrating a platform between clouds or runtimes"
+  ],
+  "disqualifiers": [
+    "Requires visa sponsorship and this req cannot sponsor",
+    "On-site only in a location outside the req's locations list"
+  ],
+  "locations": ["Remote (EU)", "Berlin, DE", "London, UK"],
+  "max_sourced": 200,
+  "browser_concurrency": 3,
+  "ats": {
+    "name": "greenhouse",
+    "url": "https://app.greenhouse.io/people",
+    "default_stage": "Sourced",
+    "note_template": "Sourced via recruiting-candidates — fit {fit_score}/10. {fit_reasoning}"
+  },
+  "applicant": {
+    "mode": "self",
+    "full_name": "",
+    "email": "",
+    "phone": "",
+    "location": "",
+    "linkedin": "",
+    "resume_path": "/opulent/workspace/uploads/resume.pdf",
+    "work_authorization": "",
+    "salary_expectation": "",
+    "why_this_company": ""
+  },
+  "created_at": ""
+}

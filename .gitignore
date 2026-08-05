@@ -1,0 +1,18 @@
+node_modules/
+.DS_Store
+*.log
+
+# Run output — never commit candidate data
+recruiting/
+*_prospects_*/
+*_research_*/
+raw/
+candidates/
+proof/
+results.csv
+summary.json
+index.html
+
+# Real role profiles hold applicant PII; only the template is tracked
+profiles/*.json
+!profiles/example.json

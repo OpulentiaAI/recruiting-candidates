@@ -1,0 +1,9 @@
+{
+  "name": "recruiting-candidates-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic helpers for the recruiting-candidates skill. No dependencies — Node 18+ only.",
+  "engines": {
+    "node": ">=18"
+  }
+}

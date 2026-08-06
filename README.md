@@ -19,9 +19,9 @@ This skill runs a hiring req end to end in a real browser instead of across four
 | → `browser_concurrency` | profile | **Yes** | Your Browserbase project session limit. Exceeding it queues sessions and looks like a hang. |
 | → `ats` block | profile | Lane A only | ATS name, URL, default stage, note template. |
 | → `applicant` block + resume | profile + `/opulent/workspace/uploads/` | Lane B only | The user's real identity and resume path. No synthesized identities. |
-| Browser tools | Opulent runtime | **Yes** | `browser_*` and `stagehand_*`. Browser context is injected automatically — no API key handling in-skill. |
+| Browser automation | Opulent runtime | **Yes** | Must hold an authenticated session. Browser context is injected automatically — no API key handling in-skill. |
 | A human, once | Live view | If auth-walled | Sign-in and MFA happen in the live session; the skill never types a credential. Login then persists across runs. |
-| A human, once | Approval gate | Lane A/B only | One `ask_question` before any ATS write or application submit. |
+| A human, once | Approval gate | Lane A/B only | One blocking question before any ATS write or application submit. |
 
 ## Expected outputs
 
@@ -38,7 +38,7 @@ Everything lands in `/opulent/workspace/recruiting/{req_slug}_{YYYY-MM-DD-HHMM}/
 | `raw/*.jsonl` | Untouched sourced records, one file per page — keep them to re-run screening without re-sourcing. |
 | `recon.json` | Detected platform, strategy, auth and pagination shape. First thing to read when a run comes back empty. |
 | `proof/*.png` | Screenshots of every ATS write and application submit. Dry-run previews land here too. |
-| Workbench artifact | The same table, interactive, via `create_spreadsheet_artifact`. |
+| Workbench artifact | The same table, rendered interactively. |
 | Chat summary | Counts, distribution, lane result, and the top 5 as a markdown table. |
 
 A healthy run puts 15–35% of sourced candidates over a threshold of 6. Above 50% the sourcing query isn't filtering; below 10% the source is wrong for the req, and widening the source beats lowering the bar.
@@ -55,7 +55,7 @@ recruiting-candidates/
 ├── profiles/
 │   └── example.json                role profile: rubric + ATS target + applicant identity
 ├── references/
-│   ├── workflow.md                 subagent prompt templates, hard tool-call caps, wave sizing
+│   ├── workflow.md                 subagent prompt templates, hard call caps, wave sizing
 │   ├── ats-platforms.md            Greenhouse/Lever/Ashby/Workday/Workable detection + traps
 │   ├── scoring-rubric.md           bands, evidence bar, protected-attribute exclusions
 │   └── example-research.md         exact frontmatter for triage / enriched / sourced records

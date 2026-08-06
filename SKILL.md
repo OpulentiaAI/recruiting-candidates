@@ -8,60 +8,60 @@ license: MIT
 
 Take a req → get a ranked shortlist with a "why this person" rationale per candidate, every claim backed by a line of evidence, and a one-approval path to the ATS.
 
-Recruiting breaks at the seams between systems: the board, the sourcing tool, the ATS, the inbox. Each seam is a human copying fields. This skill closes the seams with real browser sessions — the same Chrome a recruiter uses, with login state that survives across runs — so the workflow runs unattended without an integration for every vendor.
+Recruiting breaks at the seams between systems: the board, the sourcing tool, the ATS, the inbox. Each seam is a human copying fields. This skill closes them with real browser sessions that keep login state across runs, so the work runs unattended without an integration per vendor.
 
-**Required**: Browserbase-backed browser tools (`browser_*`, `stagehand_*`) and a role profile in `profiles/`. No API keys to manage in-skill — Opulent injects the thread's browser context automatically.
+**Required**: a role profile in `profiles/`, and browser automation that can hold an authenticated session. Discover the runtime's tools rather than assuming names for them.
 
 ## Ownership
 
 This skill owns the req pipeline: sourcing, screening, enrichment, and the handoff into the ATS or an application form. It does not own writing the job description, making the hire/no-hire call, or sending outreach copy the user has not read.
 
-**Output directory**: everything lands in `/opulent/workspace/recruiting/{req_slug}_{YYYY-MM-DD-HHMM}/`. Final deliverables are `index.html` (ranked candidate cards), `results.csv` (ATS/CRM import), and `candidates/{slug}.md` (one evidence file per person). Pass the full literal path to every subagent — never `~` or `$HOME`.
+**Output directory**: everything lands in `/opulent/workspace/recruiting/{req_slug}_{YYYY-MM-DD-HHMM}/`. Final deliverables are `index.html` (ranked candidate cards), `results.csv` (ATS/CRM import), and `candidates/{slug}.md` (one evidence file per person). Give subagents the full literal path.
 
 ---
 
-## CRITICAL — Session discipline
+## Session discipline
 
-Browser sessions are the scarce resource. A leaked session holds a concurrency slot until it times out, and the next subagent blocks behind it.
+Sessions are the scarce resource. A leaked one holds a concurrency slot until it times out, and the next subagent blocks behind it.
 
-- **One `browser_start` per subagent, reused for every page.** Never start a session per URL.
-- **Always `browser_end_session` in the same subagent that started it**, including on the failure path. A subagent that returns without ending its session has failed the run even if its data is good.
-- **Never exceed `browser_concurrency` from the profile** (default `3`). That is the Browserbase project limit, not a suggestion — over-fanning produces queued sessions that look like hangs.
-- **Batch with `browser_batch`.** Up to 20 ordered actions ride one CDP connection. Any step that does not need a model decision in between belongs in the batch. This is the single biggest latency lever in the pipeline.
-- **Never handle credentials.** If a source requires login, do not type a password. Call `browser_get_live_view`, hand the URL to the user, and let them authenticate in the live session. The thread's browser context persists that login for subsequent runs — that is the whole point of persistent contexts.
+- One session per subagent, reused for every page, released by the subagent that opened it — including on the failure path. A subagent that returns without releasing has failed the run even when its data is good.
+- Hold concurrency at the profile's `browser_concurrency` (default 3). That is the provider's project limit; over-fanning produces queued sessions that look like hangs.
+- Batch consecutive actions that need no model decision between them into one round-trip. Largest latency lever in the pipeline.
+- Authentication belongs to the user. When a source requires login, hand them a live view of the session and let them sign in; the thread's browser context carries that login into later runs.
 
-## CRITICAL — Tool restrictions (main agent AND all subagents)
+## Reading and acting on pages
 
-- Page reading: `browser_get_content` (returns title, cleaned text, links, headings, and form-field selector hints). Use it instead of screenshots when you need to *read* a page.
-- Structured extraction on JS-heavy pages: `stagehand_extract` with an explicit `schema`. Do not regex the raw HTML.
-- Selector discovery before acting: `stagehand_observe` with `returnAction: true`. Do not guess selectors from memory.
-- Multi-field forms: `browser_fill_form` (one round-trip, `maxRetries` self-correction). Never a chain of `browser_type` calls — partial form state is the most common failure mode.
-- Open discovery outside a board: `web_search`. Known page, no interaction needed: `web_fetch`. Do not spin up a browser session to read a static page.
-- Evidence files: subagents write **one markdown file per candidate** to `{OUTPUT_DIR}/candidates/{slug}.md` via a single bash heredoc call. One Bash call = one permission prompt.
-- `stagehand_agent` is the last resort, capped at `maxSteps: 12`. Reach for it only after `observe` → `act` has failed twice on the same page.
-- **Subagents get Bash + browser tools only.**
-- **HARD TOOL-CALL CAPS**: screening = 1 page read/candidate; enrichment = 4 calls/candidate; application = 1 `browser_batch` + 1 upload + 1 screenshot per job. See `references/workflow.md` for enforcement.
+- Read page text to understand a page; capture an image when the answer is visual.
+- Extract structured data against an explicit schema.
+- Resolve selectors from the live page immediately before acting on them.
+- Fill multi-field forms in one round-trip. Partial form state is the most common failure here.
+- Escalate to a browser session for content that needs rendering or interaction; fetch anything static.
+- An autonomous multi-step loop is the last resort, bounded, and reached only after observe-then-act has failed twice on the same page.
 
-## CRITICAL — Fair-screening rules
+**Hard caps** — screening: 1 page read per candidate · enrichment: 4 calls per candidate · application: 1 batch + 1 upload + 1 proof capture per job. Enforcement in `references/workflow.md`.
+
+**Subagents get shell and browser access only.** They write one evidence file per candidate to `{OUTPUT_DIR}/candidates/{slug}.md` in a single shell call — one call is one permission prompt.
+
+## Fair-screening rules
 
 Screening output is an employment record. Treat it like one.
 
 - **Score only on job-related evidence**: skills, scope, years in a comparable role, shipped work, domain. Nothing else.
-- **Never** let name, photo, age, gender, pronouns, nationality, marital or parental status, disability, or graduation year enter `fit_score` or `fit_reasoning`. Do not record them in the candidate file at all.
+- Protected attributes — name, photo, age, gender, pronouns, nationality, marital or parental status, disability, graduation year — stay out of the candidate file entirely. A field that does not exist cannot reach a score or a downstream sort.
 - School and employer names are **signals, not scores** — a brand name alone never moves a score. Cite the work, not the logo.
 - Every scored claim must quote or closely paraphrase a line from a page read. No quote, no claim.
 - If evidence is thin, write `Unknown — profile returned no readable content` and cap `fit_score` at 3. A capped score is a correct outcome, not a failure to retry around.
 - Log the rubric version in every candidate file (`rubric: v1`) so a shortlist stays auditable after the rubric changes.
 
-## CRITICAL — Approval gates
+## Approval gates
 
 Sourcing and screening are read-only and run unattended. Everything that writes to the outside world stops for the user:
 
 | Action | Gate |
 |---|---|
 | Source, screen, enrich | None — run silently |
-| Write to ATS (stage move, field update, note) | `ask_question`, once, with the exact record count |
-| Submit a job application | `ask_question` after a dry-run preview of application #1 |
+| Write to ATS (stage move, field update, note) | One blocking question, with the exact record count |
+| Submit a job application | One blocking question, after a dry-run preview of application #1 |
 | Send outreach | Out of scope — this skill drafts, the user sends |
 
 Dry-run is the default for every write lane. `--live` on the invocation does not skip the gate; it only pre-selects the affirmative option.
@@ -70,7 +70,7 @@ Dry-run is the default for every write lane. `--live` on the invocation does not
 
 ## Pipeline Overview
 
-Follow these 9 steps in order. Do not skip or reorder.
+Nine steps, in order.
 
 0. **Setup** — output dir + clean slate
 1. **Load role profile** — `profiles/{req_slug}.json`
@@ -83,13 +83,13 @@ Follow these 9 steps in order. Do not skip or reorder.
 8. **Act** — Lane A (ATS sync) or Lane B (application submission), behind the gate
 9. **Compile** — HTML report, CSV, artifact, chat summary
 
-Invoke with `/recruiting-candidates <source-url> [--req <slug>] [--fit-threshold 6] [--depth deep] [--live]`. Defaults: `DEPTH=deep`, `FIT_THRESHOLD=6`, dry-run. Parse the source URL from the invocation — do not ask the user to confirm a URL they just typed.
+Invoke with `/recruiting-candidates <source-url> [--req <slug>] [--fit-threshold 6] [--depth deep] [--live]`. Defaults: `DEPTH=deep`, `FIT_THRESHOLD=6`, dry-run. Take the source URL from the invocation and proceed.
 
 ---
 
 ## Step 0: Setup Output Directory
 
-Derive everything from the invocation. Hardcode no req name.
+Derive everything from the invocation.
 
 ```bash
 REQ_SLUG=${REQ_SLUG:-$(node -e 'const h=new URL(process.argv[1]).hostname.replace(/^www\./,"");console.log(h.split(".")[0])' "$SOURCE_URL")}
@@ -103,12 +103,12 @@ Pass `{OUTPUT_DIR}` as a full literal path into every subagent prompt.
 
 ## Step 1: Load Role Profile
 
-The profile is the rubric. Screening scores against it, enrichment writes against it, and the report is titled by it. Load from `{SKILL_DIR}/profiles/{req_slug}.json`. `example.json` is a template — never score against it.
+The profile is the rubric. Screening scores against it, enrichment writes against it, and the report is titled by it. Load from `{SKILL_DIR}/profiles/{req_slug}.json`. `example.json` is a template to copy from.
 
 **Resolution order**:
 1. `--req <slug>` on the invocation wins.
 2. Else list `profiles/*.json` minus `example.json`. Exactly one → use it and say which. Several → ask the user which req this run is for.
-3. Zero → **fail loudly**. Tell the user to copy `profiles/example.json` to `profiles/<req>.json` and fill it in. Do not invent a rubric.
+3. Zero → **fail loudly**. Tell the user to copy `profiles/example.json` to `profiles/<req>.json` and fill it in. The rubric is an input, not something to derive.
 
 ```bash
 PROFILES=$(ls {SKILL_DIR}/profiles/*.json 2>/dev/null | xargs -n1 basename | sed 's/\.json$//' | grep -v '^example$')
@@ -123,17 +123,7 @@ Never read profiles from another skill's directory. If the user wants one shared
 
 ## Step 2: Recon
 
-Identify what is behind the source URL before you try to parse it. One browser session, one batch:
-
-```
-browser_start      { viewportPreset: "desktop", intent: "recon" }
-browser_batch      { sessionId, actions: [
-                       { action: "navigate", url: SOURCE_URL },
-                       { action: "content" },
-                       { action: "screenshot" }
-                   ]}
-browser_end_session { sessionId }
-```
+Identify what is behind the source URL before parsing it. One session, one batch: navigate, read content, capture proof, release.
 
 Classify from the returned content and write `{OUTPUT_DIR}/recon.json` with `platform`, `strategy`, `auth_required`, and `pagination`:
 
@@ -147,25 +137,17 @@ Classify from the returned content and write `{OUTPUT_DIR}/recon.json` with `pla
 | Login wall / MFA challenge | any | `assisted` |
 | Anything else | `custom` | `stagehand` |
 
-See `references/ats-platforms.md` for selector catalogs, pagination shapes, and the known traps per platform. If `auth_required` is true, stop and run the live-view handoff from that reference — do not attempt to log in.
+See `references/ats-platforms.md` for selector catalogs, pagination shapes, and the known traps per platform. When `auth_required` is true, run the live-view handoff from that reference and let the user sign in.
 
 ## Step 3: Source
 
-Two source shapes, same output contract.
+Two source shapes, same output contract. Extract against an explicit schema in both.
 
-**People sourcing** (a talent pool, a search result page, a conference speaker list, an ATS candidate table) — extract one record per person:
+**People sourcing** — a talent pool, a search result page, a speaker list, an ATS candidate table. One record per person: `name` and `profile_url` required; `title`, `company`, `location`, `source_note` when present.
 
-```
-stagehand_extract { sessionId, instruction: "Extract every candidate row visible on this page",
-  schema: { type: "object", properties: { candidates: { type: "array", items: { type: "object",
-    properties: { name:{type:"string"}, title:{type:"string"}, company:{type:"string"},
-                  location:{type:"string"}, profile_url:{type:"string"}, source_note:{type:"string"} },
-    required: ["name","profile_url"] }}}}}
-```
+**Posting sourcing** — Lane B, the jobs the user will apply to. One record per posting: `job_title`, `job_url`, `company`, `location`.
 
-**Posting sourcing** (Lane B — the jobs the user will apply to) — extract one record per posting with `job_title`, `job_url`, `company`, `location`.
-
-Paginate with `browser_batch` (`click` next → `content`, repeated), appending each page to `{OUTPUT_DIR}/raw/page_{N}.jsonl`. Stop at the profile's `max_sourced` or when a page yields zero new records.
+Paginate by batching *click-next → read-content* until the profile's `max_sourced` or until a page yields zero new records, appending each page to `{OUTPUT_DIR}/raw/page_{N}.jsonl`.
 
 Sanity-check before fanning out:
 
@@ -223,10 +205,10 @@ Expect 15–35% survival. Below 10% means the rubric is narrower than the sourci
 
 Deep evidence on survivors only. Hard cap: **4 calls per candidate**, four lanes:
 
-1. `web_search "{name} {company} linkedin"` — canonical profile (always)
-2. `web_search "{name} github OR blog OR talk 2026"` — shipped work (deep+)
-3. `browser_get_content` on the single best result — the actual evidence (deep+)
-4. `web_search "{name} {domain} conference OR podcast"` — public signal (deeper only)
+1. Search for the canonical profile — name, company, network (always)
+2. Search for shipped work — repos, writing, talks, within the last year (deep+)
+3. Read the single most substantive result properly — this is the lane that produces the evidence quote (deep+)
+4. Search for public signal — conference, podcast, panel (deeper only)
 
 Quick mode skips Step 7. Deep runs lanes 1–3. Deeper runs all four.
 
@@ -245,20 +227,9 @@ Pick the lane from the profile's `ats` block and the invocation. Both lanes stop
 Move the shortlist into the ATS the way a recruiter does: real session, real form, real audit trail.
 
 1. Build the change set — one line per candidate: `slug|ats_action|target_stage|note`.
-2. Preview it in chat as a table, then gate:
-
-```
-ask_question {
-  question: "Push {N} candidates to {ATS} — {M} new records, {K} stage moves?",
-  fields: [{ name: "approve", label: "Push to ATS", type: "confirm", required: true }],
-  reason: "Writes to your ATS of record. Dry-run so far — nothing has left this workspace.",
-  urgency: "blocking"
-}
-```
-
-3. On approval, one subagent per concurrency slot, each with its own session:
-   `browser_start` → `stagehand_observe` the target form → `browser_fill_form` → `browser_screenshot` into `{OUTPUT_DIR}/proof/{slug}.png` → `browser_end_session`.
-4. Verify by re-reading the record — a `200` is not proof the field took. Log `ats_synced: true` in the candidate file only after the re-read confirms it.
+2. Preview it in chat as a table, then put a blocking question to the user carrying the exact counts: how many candidates, how many new records, how many stage moves, and that everything so far is a dry run.
+3. On approval, one subagent per concurrency slot, each with its own session: resolve the target form on the live page, fill it in one round-trip, capture proof to `{OUTPUT_DIR}/proof/{slug}.png`, release the session.
+4. Verify by re-reading the record — a `200` is not proof the field took. Log `ats_synced: true` only after the re-read confirms it.
 
 ### Lane B — Application submission
 
@@ -266,14 +237,11 @@ Applies **as the user**, using the `applicant` block from the profile — real n
 
 Per posting, one batch:
 
-```
-browser_start        { viewportPreset: "desktop" }
-browser_upload_file  { sessionId, filePath: "/opulent/workspace/uploads/{resume}.pdf" }
-stagehand_observe    { sessionId, instruction: "Locate every required application field", returnAction: true }
-browser_fill_form    { sessionId, fields: [...], maxRetries: 3 }        # no submitSelector on the dry run
-browser_screenshot   { sessionId, fullPage: true }                      # → proof/{job_slug}_preview.png
-browser_end_session  { sessionId }
-```
+1. Open a session and stage the resume from `applicant.resume_path` for upload.
+2. Resolve every required field on the live page, including the submit control.
+3. Fill the form in one round-trip — on a dry run, leave the submit control unset.
+4. Capture the filled page full-height to `proof/{job_slug}_{mode}.png`.
+5. Release the session. Application flows leave the page dirty, so one session per posting is correct here.
 
 Show the user the filled-but-unsubmitted screenshot for application #1, then gate on the whole run. On approval, re-run with `submitSelector` set, capture a post-submit screenshot as the receipt, and record `applied_at` + `confirmation_text` per posting.
 
@@ -290,7 +258,7 @@ Generates:
 - `{OUTPUT_DIR}/results.csv` — ATS/CRM-ready import
 - `{OUTPUT_DIR}/summary.json` — counts and score distribution for the chat summary
 
-Then surface the table in the workbench with `create_spreadsheet_artifact` (headers from the CSV) and post the summary:
+Then surface the table as an interactive artifact (headers from the CSV) and post the summary:
 
 ```
 ## Shortlist ready — {Role Title}
@@ -312,6 +280,6 @@ Show the **top 5 candidate cards** as a markdown table sorted by fit score, each
 |---|---|---|
 | Subagents hang at start | More sessions than `browser_concurrency` | Lower fan-out; check for un-ended sessions from the last run |
 | Every candidate scores 3 | Source page needed auth; content came back empty | Live-view handoff in Step 2, then re-source |
-| Form fills, submit does nothing | Selector matched a hidden duplicate node | `stagehand_observe` with `returnAction: true`, use the returned selector |
+| Form fills, submit does nothing | Selector matched a hidden duplicate node | Re-resolve the control on the live page and use what it returns |
 | Duplicate applications | Blind retry after an ambiguous submit | Re-read the page before any retry |
 | Shortlist looks arbitrary | Rubric paraphrased into subagent prompts | Embed profile fields verbatim; re-run Step 5 |

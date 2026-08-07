@@ -56,10 +56,12 @@ recruiting-candidates/
 │   └── example.json                role profile: rubric + ATS target + applicant identity
 ├── references/
 │   ├── workflow.md                 subagent prompt templates, hard call caps, wave sizing
+│   └── (each reference declares what it layers on rather than restating it)
 │   ├── ats-platforms.md            Greenhouse/Lever/Ashby/Workday/Workable detection + traps
 │   ├── scoring-rubric.md           bands, evidence bar, protected-attribute exclusions
 │   └── example-research.md         exact frontmatter for triage / enriched / sourced records
 └── scripts/
+    ├── lint_candidates.mjs          the scoring contract, made executable
     ├── normalize_candidates.mjs    dedupe across sources on URL → email → name+company
     └── compile_report.mjs          candidates/*.md → index.html + results.csv + summary.json
 ```

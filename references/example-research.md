@@ -94,3 +94,7 @@ Rules the enriched file must satisfy:
 ```json
 {"job_title":"Staff Platform Engineer","job_url":"https://boards.greenhouse.io/example/jobs/1234567","company":"Example Co","location":"Remote (EU)"}
 ```
+
+## Layers on top of
+
+`scoring-rubric.md` owns what a score means. This file owns only the shape a file takes, and `scripts/lint_candidates.mjs` checks that shape mechanically.

@@ -14,6 +14,8 @@ A req in, a ranked shortlist out, every claim carrying the line that supports it
 npm run demo && npm run open
 ```
 
+`demo` normalizes, reports, then lints the candidate files against the scoring contract.
+
 **Live run:** stages 1 to 9 below.
 
 ## Invariants
@@ -21,8 +23,7 @@ npm run demo && npm run open
 - One session per subagent, released by that subagent, including on the failure path.
 - Concurrency never exceeds the profile's `browser_concurrency`.
 - Protected attributes never enter a candidate file. A field that does not exist cannot reach a score.
-- Every scored claim quotes a line from a page that was read. No quote, no claim.
-- Thin evidence caps `fit_score` at 3. That is the answer, not a retry trigger.
+- Scoring rules live in `references/scoring-rubric.md`. `npm run lint` enforces the checkable half and exits 1 on a violation.
 - Writes stop for a human: ATS sync and application submit each need one blocking approval.
 - Authentication is the user's. Hand them a live view; never type a credential.
 
@@ -80,7 +81,11 @@ Lane A syncs to the ATS, lane B submits applications. Both are dry-run first and
 node scripts/compile_report.mjs {OUTPUT_DIR}
 ```
 
-*Done: `index.html`, `results.csv`, `summary.json` written and the top five reported.*
+```bash
+npm run lint    # or: node scripts/lint_candidates.mjs {OUTPUT_DIR}
+```
+
+*Done: report written, linter exits 0, top five reported.*
 
 ## References
 

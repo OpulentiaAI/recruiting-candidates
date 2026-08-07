@@ -70,3 +70,7 @@ The login persists in the thread's browser context, so later runs against the sa
 - Use the official API or export whenever the user has access to one. This skill exists for the seams where no integration exists, not to replace integrations that do.
 - Honor each platform's terms and rate expectations. Sourcing at a human pace from an authenticated session the user owns is the intended mode.
 - A CAPTCHA or interstitial is a live-view handoff, not a puzzle to solve.
+
+## Layers on top of
+
+`SKILL.md` owns session discipline and the caps. This file adds only what differs per platform: detection, selectors, pagination shape, and the trap that bites first.

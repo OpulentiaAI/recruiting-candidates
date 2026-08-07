@@ -33,7 +33,7 @@ ROLE RUBRIC — score against this and nothing else:
 CANDIDATES (one per line — `slug|name|company|primary_url`):
 {CANDIDATE_LIST}
 
-Use the slug verbatim as the filename. Do not re-slugify — you will create duplicates.
+Use the slug verbatim as the filename. Re-slugifying creates duplicates.
 
 SESSION RULES:
 1. Open ONE session at the start, reuse it for every candidate, release it before you return —
@@ -248,3 +248,7 @@ Report back ONLY: "{mode}: {n}/{total} posted, {k} unconfirmed ({slugs}), sessio
 - Subagent busts its cap (visible in the `# call N/TOTAL` log) → discard that batch's files and re-run it. Over-budget data is usually retry-loop data.
 - Coverage check fails (fewer files than batch lines) → re-run only the missing slugs, not the whole batch.
 - Whole wave fails identically → the platform changed. Stop, re-run recon, update `references/ats-platforms.md` before spending more calls.
+
+## Layers on top of
+
+`scoring-rubric.md` owns the bands and the evidence bar. The copy inside each prompt below is operative rather than duplicated: a subagent receives the prompt without the repository, so the rules have to travel with it. When the two disagree, `scoring-rubric.md` wins and this file is stale.

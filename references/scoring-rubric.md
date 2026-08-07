@@ -1,5 +1,7 @@
 # Scoring rubric — v1
 
+**Single source for scoring.** Bands, the evidence bar, and the protected-attribute exclusions live here and nowhere else. `SKILL.md` points at this file; `workflow.md` carries an operative copy because a subagent prompt travels without the repository. `scripts/lint_candidates.mjs` enforces the checkable half.
+
 The rubric is the contract between the role profile and the shortlist. Change it and you have a different shortlist, so every candidate file records `rubric: v1`. Bump the version when the bands or the evidence standard change; leave old files pointing at the old version.
 
 ## Bands
@@ -20,7 +22,7 @@ Screening assigns the band from one page read. Enrichment may move it **±2 at m
 
 **Counts**: a quoted line from a profile, posting, repo, changelog, talk abstract, or published post that names what the person did and at what scope.
 
-**Does not count**:
+**What does not count**:
 - A job title on its own. Titles are not scoped and do not deflate across companies.
 - Tenure length. Four years is not seniority.
 - Company or school brand. A signal for context, never a term in the score.
@@ -43,7 +45,7 @@ A screening record is an employment record. It should read as something you woul
 
 Only what the profile's `disqualifiers` array states — hard, checkable, job-related facts (e.g. "no US work authorization and req cannot sponsor", "requires on-site, candidate is remote-only"). A disqualifier caps the score at 2 and must cite its evidence line like any other claim.
 
-Never invent a disqualifier from an absence. Missing evidence is `Unknown`, which caps at 3 — that is a different, recoverable state.
+A disqualifier is a stated fact. An absence is `Unknown`, which caps at 3 and stays recoverable. Missing evidence is `Unknown`, which caps at 3 — that is a different, recoverable state.
 
 ## Calibration
 

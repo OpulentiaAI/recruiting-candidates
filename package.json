@@ -2,11 +2,14 @@
   "name": "recruiting-candidates",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "demo": "rm -rf .run && cp -R samples/fixture .run && npm run normalize && npm run report",
+    "demo": "rm -rf .run && cp -R samples/fixture .run && npm run normalize && npm run report && npm run lint",
     "normalize": "node scripts/normalize_candidates.mjs .run",
     "report": "node scripts/compile_report.mjs .run",
-    "open": "node scripts/compile_report.mjs .run --open"
+    "open": "node scripts/compile_report.mjs .run --open",
+    "lint": "node scripts/lint_candidates.mjs .run"
   }
 }

@@ -1,0 +1,12 @@
+{
+  "name": "recruiting-candidates",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "demo": "rm -rf .run && cp -R samples/fixture .run && npm run normalize && npm run report",
+    "normalize": "node scripts/normalize_candidates.mjs .run",
+    "report": "node scripts/compile_report.mjs .run",
+    "open": "node scripts/compile_report.mjs .run --open"
+  }
+}

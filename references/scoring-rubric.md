@@ -1,6 +1,6 @@
 # Scoring rubric — v1
 
-**Single source for scoring.** Bands, the evidence bar, and the protected-attribute exclusions live here and nowhere else. `SKILL.md` points at this file; `workflow.md` carries an operative copy because a subagent prompt travels without the repository. `scripts/lint_candidates.mjs` enforces the checkable half.
+**Single source for scoring.** Bands, the evidence bar, and the protected-attribute exclusions live here and nowhere else. `SKILL.md` points at this file, `workflow.md` points at it for the post-wave check, and `scripts/lint_candidates.mjs` enforces the checkable half.
 
 The rubric is the contract between the role profile and the shortlist. Change it and you have a different shortlist, so every candidate file records `rubric: v1`. Bump the version when the bands or the evidence standard change; leave old files pointing at the old version.
 

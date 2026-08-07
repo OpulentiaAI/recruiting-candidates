@@ -55,7 +55,7 @@ recruiting-candidates/
 ├── profiles/
 │   └── example.json                role profile: rubric + ATS target + applicant identity
 ├── references/
-│   ├── workflow.md                 subagent prompt templates, hard call caps, wave sizing
+│   ├── workflow.md                 call budgets, batch sizes, wave checks
 │   └── (each reference declares what it layers on rather than restating it)
 │   ├── ats-platforms.md            Greenhouse/Lever/Ashby/Workday/Workable detection + traps
 │   ├── scoring-rubric.md           bands, evidence bar, protected-attribute exclusions

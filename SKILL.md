@@ -60,7 +60,7 @@ Merges on profile URL, then email, then name+company. Drops protected attributes
 *Done: unique count reported, merge count reported.*
 
 ### 6 · Screen
-One page read per candidate. Batches of 10, subagents capped at `browser_concurrency`. Prompt in `references/workflow.md`.
+One page read per candidate. Batches of 10, subagents capped at `browser_concurrency`. Budgets in `references/workflow.md`.
 
 *Done: `candidates/*.md` count equals `seed_candidates.txt` line count.*
 
@@ -93,7 +93,7 @@ Open on trigger.
 
 | Trigger | File |
 | --- | --- |
-| Writing a subagent prompt | `references/workflow.md` |
+| Sizing a wave or a budget | `references/workflow.md` |
 | A platform behaves oddly | `references/ats-platforms.md` |
 | A score is disputed | `references/scoring-rubric.md` |
 | A file's frontmatter is unclear | `references/example-research.md` |

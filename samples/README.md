@@ -65,3 +65,17 @@ What each number proves:
 - **The band spread** exercises every rubric path: a `+1` enrichment adjustment with its reason, a title-match-but-wrong-domain at 4, a hard disqualifier at 2 recorded with its evidence line, and an auth-walled profile capped at 3 rather than guessed.
 
 Open `/tmp/rc-demo/index.html` for the ranked cards and `results.csv` for the 18-column import.
+
+## 4. Offline test — the postings lane
+
+Lane B sources job postings rather than people, so the records carry `job_title` and `job_url` and no person's name at all.
+
+```bash
+npm run demo:postings
+```
+
+Expected: 5 records in, 3 postings out, 1 merged, 1 dropped.
+
+- **merged: 1** — the same role appears twice, once from a board with a `job_url` and once from an aggregator with only a title and a company. A posting registers every key it has, so the weaker key joins them.
+- **no-identity: 1** — a record with no title and no URL is dropped rather than counted as a posting.
+- The label column in `seed_candidates.txt` holds the job title, since there is no person to name.

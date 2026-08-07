@@ -6,9 +6,12 @@
  *
  * Reads   {OUTPUT_DIR}/raw/*.jsonl   (one JSON record per line, any source)
  * Writes  {OUTPUT_DIR}/candidates.jsonl
- *         {OUTPUT_DIR}/seed_candidates.txt   slug|name|company|primary_url
+ *         {OUTPUT_DIR}/seed_candidates.txt   slug|label|company|primary_url
  *
- * Merge key, in order: normalized profile URL → email → name+company.
+ * Label is the person's name, or the posting title when Lane B sourced a job.
+ * Merge keys, strongest first: URL, email, then name+company for a person or
+ * title+company for a posting. A record registers every key it has, so two
+ * listings of the same subject collapse even when only the weaker key matches.
  * Protected attributes are dropped on the way in — see references/scoring-rubric.md.
  */
 
@@ -43,6 +46,7 @@ const ALIASES = {
   company: "company", current_company: "company", employer: "company", organization: "company",
   location: "location", city: "location", region: "location",
   profile_url: "primary_url", primary_url: "primary_url", url: "primary_url", link: "primary_url",
+  job_url: "primary_url", posting_url: "primary_url", apply_url: "primary_url",
   email: "email", email_address: "email",
   source_note: "source_note", source: "source_note", note: "source_note",
 };
@@ -93,14 +97,36 @@ function canonicalize(record) {
   return out;
 }
 
-function identityKey(rec) {
+/**
+ * Every key a record can be recognized by, strongest first.
+ *
+ * All of them are registered, so the same subject sourced two ways still
+ * collapses: a board listing carries a URL, an aggregator listing of the same
+ * role carries only title and company, and the weaker key is what joins them.
+ *
+ * `nc` and `tc` are exclusive. A record with a person's name uses name plus
+ * company; only a record with no name at all falls through to title plus
+ * company, which is what a Lane B posting looks like. Keeping them exclusive
+ * is what stops two different people who share a title and an employer from
+ * collapsing into one row.
+ */
+function identityKeys(rec) {
+  const keys = [];
   const url = normalizeUrl(rec.primary_url);
-  if (url) return `url:${url}`;
-  if (rec.email) return `email:${String(rec.email).toLowerCase()}`;
+  if (url) keys.push(`url:${url}`);
+  if (rec.email) keys.push(`email:${String(rec.email).toLowerCase()}`);
   const name = slugify(rec.name);
-  if (!name) return "";
-  return `nc:${name}:${slugify(rec.company)}`;
+  if (name) {
+    keys.push(`nc:${name}:${slugify(rec.company)}`);
+  } else {
+    const title = slugify(rec.title);
+    if (title) keys.push(`tc:${title}:${slugify(rec.company)}`);
+  }
+  return keys;
 }
+
+/** What a record is called downstream: a person's name, or a posting's title. */
+const label = (rec) => rec.name || rec.title || "";
 
 /** A tracking-free URL beats a longer one carrying ?ref= / #anchor junk. */
 function preferCleanerUrl(current, incoming) {
@@ -169,23 +195,28 @@ for (const file of files) {
       if (!record || typeof record !== "object") { malformed += 1; continue; }
       records += 1;
       const canonical = canonicalize(record);
-      const key = identityKey(canonical);
-      if (!key) { skippedNoIdentity += 1; continue; }
+      const keys = identityKeys(canonical);
+      if (keys.length === 0) { skippedNoIdentity += 1; continue; }
       canonical.sources = file;
-      if (byIdentity.has(key)) merge(byIdentity.get(key), canonical);
-      else byIdentity.set(key, canonical);
+      const existing = keys.map((k) => byIdentity.get(k)).find(Boolean);
+      const entry = existing ? merge(existing, canonical) : canonical;
+      for (const key of keys) byIdentity.set(key, entry);
     }
   }
 }
 
 // Stable order: company, then name — keeps diffs between runs readable.
-const candidates = [...byIdentity.values()].sort((a, b) =>
+const candidates = [...new Set(byIdentity.values())].sort((a, b) =>
   `${a.company || ""}${a.name || ""}`.localeCompare(`${b.company || ""}${b.name || ""}`),
 );
 
 const usedSlugs = new Map();
 for (const candidate of candidates) {
-  const base = slugify(candidate.name) || slugify(candidate.primary_url) || "candidate";
+  const base =
+    slugify(candidate.name) ||
+    slugify([candidate.title, candidate.company].filter(Boolean).join(" ")) ||
+    slugify(candidate.primary_url) ||
+    "candidate";
   const count = (usedSlugs.get(base) || 0) + 1;
   usedSlugs.set(base, count);
   candidate.slug = count === 1 ? base : `${base}-${count}`;
@@ -198,7 +229,7 @@ writeFileSync(
 writeFileSync(
   join(OUTPUT_DIR, "seed_candidates.txt"),
   candidates
-    .map((c) => [c.slug, c.name || "", c.company || "", c.primary_url || ""].join("|"))
+    .map((c) => [c.slug, label(c), c.company || "", c.primary_url || ""].join("|"))
     .join("\n") + (candidates.length ? "\n" : ""),
 );
 

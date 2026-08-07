@@ -6,7 +6,8 @@
     "node": ">=18"
   },
   "scripts": {
-    "demo": "rm -rf .run && cp -R samples/fixture .run && npm run normalize && npm run report && npm run lint",
+    "demo": "rm -rf .run && cp -R samples/fixture .run && npm run normalize && npm run report && npm run lint && npm run demo:postings",
+    "demo:postings": "rm -rf .run-postings && cp -R samples/postings-fixture .run-postings && node scripts/normalize_candidates.mjs .run-postings",
     "normalize": "node scripts/normalize_candidates.mjs .run",
     "report": "node scripts/compile_report.mjs .run",
     "open": "node scripts/compile_report.mjs .run --open",

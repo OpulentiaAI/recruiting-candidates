@@ -87,13 +87,17 @@ Rules the enriched file must satisfy:
 {"name":"Dana Okonkwo","title":"Staff Software Engineer","company":"Northwind Systems","location":"Berlin, DE","profile_url":"https://example-board.com/talent/dana-okonkwo","source_note":"talent pool page 2"}
 ```
 
-`normalize_candidates.mjs` merges these on identity key — `profile_url` → `email` → `name`+`company` — and emits `candidates.jsonl` plus `seed_candidates.txt` (`slug|name|company|primary_url`).
+`normalize_candidates.mjs` merges these on identity key — `profile_url`, then `email`, then `name`+`company` — and emits `candidates.jsonl` plus `seed_candidates.txt` (`slug|label|company|primary_url`, where the label is the person's name).
 
 ## Posting record — Lane B, `raw/jobs_{N}.jsonl`
 
 ```json
 {"job_title":"Staff Platform Engineer","job_url":"https://boards.greenhouse.io/example/jobs/1234567","company":"Example Co","location":"Remote (EU)"}
 ```
+
+A posting has no person, so it merges on `job_url` first and falls back to `job_title`+`company`. That fallback is what collapses an aggregator listing carrying no URL into the board listing of the same role. In `seed_candidates.txt` the label column holds the job title.
+
+`samples/postings-fixture/` exercises this lane: five records to three postings, one merged across the URL boundary, one dropped for having no title and no URL. Run it with `npm run demo:postings`.
 
 ## Layers on top of
 

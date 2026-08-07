@@ -19,10 +19,13 @@ node_modules/
 /samples/fixture/results.csv
 /samples/fixture/summary.json
 /samples/fixture/index.html
+/samples/postings-fixture/candidates.jsonl
+/samples/postings-fixture/seed_candidates.txt
 
 # Real role profiles hold applicant PII; only the shipped template is tracked
 /profiles/*.json
 !/profiles/example.json
 
-# Demo working directory
+# Demo working directories
 /.run/
+/.run-postings/

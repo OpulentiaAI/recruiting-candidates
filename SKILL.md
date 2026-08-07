@@ -55,7 +55,7 @@ Extract against an explicit schema. People need `name` and `profile_url`; postin
 ```bash
 node scripts/normalize_candidates.mjs {OUTPUT_DIR}
 ```
-Merges on profile URL, then email, then name+company. Drops protected attributes on the way in. Writes `candidates.jsonl` and `seed_candidates.txt`.
+Merges on URL, then email, then name+company for a person or title+company for a posting. A record registers every key it has, so the same subject sourced two ways collapses. Drops protected attributes on the way in. Writes `candidates.jsonl` and `seed_candidates.txt`.
 
 *Done: unique count reported, merge count reported.*
 
